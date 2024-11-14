@@ -1,0 +1,44 @@
+name: collection-app
+
+services:
+  db:
+    build:
+      context: .
+      dockerfile: db.dockerfile
+      args:
+        - MYSQL_USER=${DB_USER}
+        - MYSQL_PASSWORD=${DB_PASSWORD}
+        - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - collection-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend.dockerfile
+    restart: unless-stopped
+    ports:
+      - 8888:8888
+    depends_on:
+      - db
+    networks:
+      - collection-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend.dockerfile
+    restart: unless-stopped
+    ports:
+      - 80:80
+    depends_on:
+      - backend
+    networks:
+      - collection-network
+
+networks:
+  collection-network:
+    driver: bridge
